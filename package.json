@@ -1,0 +1,45 @@
+{
+  "name": "ubytovna-trnava-pro",
+  "version": "2.0.0",
+  "description": "Profesionálny systém správy ubytovacího zariadenia s email notifikáciami",
+  "main": "server_with_emails.js",
+  "scripts": {
+    "start": "node server_with_emails.js",
+    "dev": "nodemon server_with_emails.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ubytovna",
+    "hostel",
+    "reservation",
+    "booking",
+    "management",
+    "email",
+    "notifications"
+  ],
+  "author": "Claude AI",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "nodemailer": "^6.9.7",
+    "compression": "^1.7.4",
+    "body-parser": "^1.20.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/USERNAME/ubytovna-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/USERNAME/ubytovna-app/issues"
+  },
+  "homepage": "https://github.com/USERNAME/ubytovna-app#readme"
+}
