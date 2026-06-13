@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏨 Ubytovňa Trnava - Profesionálny Admin Panel</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f7fa;
+      color: #333;
+      min-height: 100vh;
+      padding: 15px;
+    }
+    .container { max-width: 1600px; margin: 0 auto; }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .header h1 { font-size: 28px; margin: 0 0 8px; }
+    .header p { opacity: 0.9; font-size: 13px; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border-left: 4px solid #667eea;
+    }
+    .stat-card .number { font-size: 24px; font-weight: bold; color: #667eea; margin: 8px 0; }
+    .stat-card .label { font-size: 11px; color: #888; }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      background: white;
+      padding: 8px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .tab-btn {
+      padding: 10px 16px;
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 13px;
+      transition: all 0.3s;
+    }
+    .tab-btn.active {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+    .tab-content {
+      display: none;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .tab-content.active { display: block; }
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .room-card {
+      background: #f9f9f9;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .room-header {
+      background: #667eea;
+      color: white;
+      padding: 15px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .room-beds {
+      padding: 10px 15px;
+      background: white;
+      border-bottom: 1px solid #ddd;
+      font-size: 12px;
+    }
+    .bed-item {
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 12px;
+    }
+    .bed-item:last-child { border-bottom: none; }
+    .bed-status {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: bold;
+      margin-left: 5px;
+    }
+    .bed-empty { background: #d4edda; color: #155724; }
+    .bed-occupied { background: #f8d7da; color: #721c24; }
+    .bed-company { background: #fff3cd; color: #856404; }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      font-size: 13px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 13px;
+      transition: all 0.3s;
+    }
+    .btn-primary { background: #667eea; color: white; }
+    .btn-primary:hover { background: #5568d3; }
+    .btn-success { background: #28a745; color: white; }
+    .btn-danger { background: #dc3545; color: white; }
+    .btn-secondary { background: #ccc; color: #333; }
+    .message {
+      padding: 12px 15px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      font-size: 13px;
+    }
+    .message.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .message.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .table th {
+      background: #f0f0f0;
+      padding: 10px;
+      text-align: left;
+      font-weight: bold;
+      border-bottom: 2px solid #ddd;
+    }
+    .table td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    .table tr:hover { background: #f9f9f9; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: bold;
+    }
+    .badge-success { background: #d4edda; color: #155724; }
+    .badge-warning { background: #fff3cd; color: #856404; }
+    .badge-danger { background: #f8d7da; color: #721c24; }
+    .price-calc {
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+    .price-calc p {
+      margin: 5px 0;
+      font-size: 13px;
+    }
+    .price-calc strong { color: #667eea; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🏨 Ubytovňa Trnava - Profesionálny Admin Panel</h1>
+      <p>Správa 8 izieb • 24 postieľ • Ceny/noc & mesiac • Firmy & hostia</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="label">Celkovo postieľ</div>
+        <div class="number">24</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Volné postieľe</div>
+        <div class="number" id="emptyBeds">24</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Obsadené postieľe</div>
+        <div class="number" id="occupiedBeds">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Firmy pronajímajú</div>
+        <div class="number" id="companyBeds">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Rezervácie</div>
+        <div class="number" id="totalReservations">0</div>
+      </div>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <button class="tab-btn active" onclick="switchTab('calendar')">📅 Kalendár (8 izieb)</button>
+      <button class="tab-btn" onclick="switchTab('reservations')">📋 Rezervácie</button>
+      <button class="tab-btn" onclick="switchTab('companies')">🏢 Firmy</button>
+      <button class="tab-btn" onclick="switchTab('pricing')">💰 Ceny</button>
+    </div>
+
+    <div id="message"></div>
+
+    <!-- CALENDAR TAB -->
+    <div id="calendar" class="tab-content active">
+      <h2>📅 Prehľad izieb a postieľ</h2>
+      <p style="color: #888; margin-bottom: 15px;">8 izieb x 3 postieľe = 24 miest. Klikni na postel pre detaily.</p>
+      <div class="calendar" id="calendarView"></div>
+    </div>
+
+    <!-- RESERVATIONS TAB -->
+    <div id="reservations" class="tab-content">
+      <h2>📋 Rezervácie</h2>
+      <button class="btn btn-success" onclick="toggleNewReservationForm()" style="margin-bottom: 15px;">+ Nová rezervácia</button>
+      
+      <div id="newReservationForm" style="display: none; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <h3 style="margin-bottom: 15px;">Nová rezervácia</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Meno hosťa *</label>
+            <input type="text" id="resName">
+          </div>
+          <div class="form-group">
+            <label>Email *</label>
+            <input type="email" id="resEmail">
+          </div>
+          <div class="form-group">
+            <label>Telefón</label>
+            <input type="tel" id="resPhone">
+          </div>
+          <div class="form-group">
+            <label>Firma/Spoločnosť</label>
+            <select id="resCompany">
+              <option value="">Bez firmy (súkromný hosť)</option>
+              <option value="">-- Vyberte firmu --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Izba *</label>
+            <select id="resRoom">
+              <option value="">Vyber izbu</option>
+              <option value="1">Izba 1</option>
+              <option value="2">Izba 2</option>
+              <option value="3">Izba 3</option>
+              <option value="4">Izba 4</option>
+              <option value="5">Izba 5</option>
+              <option value="6">Izba 6</option>
+              <option value="7">Izba 7</option>
+              <option value="8">Izba 8</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Postel (1-3) *</label>
+            <select id="resBed">
+              <option value="">Vyber postel</option>
+              <option value="1">Postel 1</option>
+              <option value="2">Postel 2</option>
+              <option value="3">Postel 3</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Príchod *</label>
+            <input type="date" id="resCheckIn">
+          </div>
+          <div class="form-group">
+            <label>Odchod *</label>
+            <input type="date" id="resCheckOut">
+          </div>
+          <div class="form-group">
+            <label>Typ nájmu *</label>
+            <select id="resType" onchange="updatePriceCalculation()">
+              <option value="">Vyber typ</option>
+              <option value="short">Krátkodobý (cena/noc)</option>
+              <option value="long">Dlhodobý (cena/mesiac)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Cena (€) *</label>
+            <input type="number" id="resPrice" min="0" onchange="updatePriceCalculation()">
+          </div>
+        </div>
+        <div class="price-calc" id="priceCalc" style="display: none;">
+          <p><strong>Výpočet ceny:</strong></p>
+          <p id="priceDetail"></p>
+          <p style="font-size: 14px; margin-top: 10px;"><strong>SPOLU: <span id="totalPrice">0</span>€</strong></p>
+        </div>
+        <button class="btn btn-primary" onclick="createReservation()" style="margin-right: 10px;">Vytvoriť</button>
+        <button class="btn btn-secondary" onclick="toggleNewReservationForm()">Zrušiť</button>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Hosť</th>
+            <th>Firma</th>
+            <th>Izba/Postel</th>
+            <th>Príchod</th>
+            <th>Odchod</th>
+            <th>Typ</th>
+            <th>Cena</th>
+            <th>Spolu</th>
+            <th>Akcia</th>
+          </tr>
+        </thead>
+        <tbody id="reservationsTable"></tbody>
+      </table>
+    </div>
+
+    <!-- COMPANIES TAB -->
+    <div id="companies" class="tab-content">
+      <h2>🏢 Firmy prenajímajúce postieľe</h2>
+      <button class="btn btn-success" onclick="toggleNewCompanyForm()" style="margin-bottom: 15px;">+ Nová firma</button>
+      
+      <div id="newCompanyForm" style="display: none; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <h3 style="margin-bottom: 15px;">Nová firma</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Názov firmy *</label>
+            <input type="text" id="companyName">
+          </div>
+          <div class="form-group">
+            <label>Kontaktný email</label>
+            <input type="email" id="companyEmail">
+          </div>
+          <div class="form-group">
+            <label>Telefón</label>
+            <input type="tel" id="companyPhone">
+          </div>
+          <div class="form-group">
+            <label>IČO</label>
+            <input type="text" id="companyIco">
+          </div>
+          <div class="form-group">
+            <label>Počet postieľ (prenajímaných)</label>
+            <input type="number" id="companyBedCount" min="1">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="createCompany()" style="margin-right: 10px;">Vytvoriť</button>
+        <button class="btn btn-secondary" onclick="toggleNewCompanyForm()">Zrušiť</button>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Firma</th>
+            <th>Email</th>
+            <th>Telefón</th>
+            <th>IČO</th>
+            <th>Postieľe</th>
+            <th>Akcia</th>
+          </tr>
+        </thead>
+        <tbody id="companiesTable"></tbody>
+      </table>
+    </div>
+
+    <!-- PRICING TAB -->
+    <div id="pricing" class="tab-content">
+      <h2>💰 Ceny</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+        <div style="background: #f9f9f9; padding: 20px; border-radius: 8px;">
+          <h3 style="margin-bottom: 15px;">⏱️ Krátkodobé ubytovanie</h3>
+          <div class="form-group">
+            <label>Cena za 1 noc (€) *</label>
+            <input type="number" id="priceShort" value="25" min="0">
+          </div>
+          <button class="btn btn-primary" onclick="updatePricing()">Uložiť</button>
+        </div>
+
+        <div style="background: #f9f9f9; padding: 20px; border-radius: 8px;">
+          <h3 style="margin-bottom: 15px;">📅 Dlhodobé ubytovanie</h3>
+          <div class="form-group">
+            <label>Cena za 1 mesiac (€) *</label>
+            <input type="number" id="priceLong" value="500" min="0">
+          </div>
+          <button class="btn btn-primary" onclick="updatePricing()">Uložiť</button>
+        </div>
+      </div>
+
+      <div style="background: #f0f0f0; padding: 20px; border-radius: 8px; margin-top: 20px;">
+        <h3 style="margin-bottom: 15px;">📊 Kalkulačka cien</h3>
+        <div class="form-group">
+          <label>Počet nocí / mesiacov:</label>
+          <input type="number" id="calcDays" value="1" min="1">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div style="background: white; padding: 15px; border-radius: 6px;">
+            <p style="font-size: 12px; color: #888;">Krátkodobý (noc)</p>
+            <p style="font-size: 20px; font-weight: bold; color: #667eea;">
+              <span id="calcShortPrice">25</span>€
+            </p>
+          </div>
+          <div style="background: white; padding: 15px; border-radius: 6px;">
+            <p style="font-size: 12px; color: #888;">Dlhodobý (mesiac)</p>
+            <p style="font-size: 20px; font-weight: bold; color: #667eea;">
+              <span id="calcLongPrice">500</span>€
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DATA
+    let reservations = [];
+    let companies = [];
+    let prices = { short: 25, long: 500 };
+    let beds = {};
+
+    // INIT BEDS STRUCTURE
+    function initBeds() {
+      for (let room = 1; room <= 8; room++) {
+        beds[room] = { 1: null, 2: null, 3: null };
+      }
+    }
+
+    // FUNCTIONS
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+
+      if (tabName === 'calendar') renderCalendar();
+      if (tabName === 'reservations') renderReservations();
+      if (tabName === 'companies') renderCompanies();
+    }
+
+    function renderCalendar() {
+      let html = '';
+      for (let room = 1; room <= 8; room++) {
+        let bedsHtml = '';
+        for (let bed = 1; bed <= 3; bed++) {
+          const reservation = beds[room][bed];
+          const status = reservation ? 'occupied' : 'empty';
+          const statusText = reservation ? `${reservation.name}` : 'Voľná';
+          const company = reservation?.company ? ` (${reservation.company})` : '';
+          const dates = reservation ? `${reservation.checkIn} - ${reservation.checkOut}` : '';
+          
+          bedsHtml += `
+            <div class="bed-item">
+              <strong>Postel ${bed}:</strong> 
+              <span class="bed-status bed-${status}">${statusText}</span>
+              ${dates ? `<br><small>${dates}</small>` : ''}
+              ${company}
+            </div>
+          `;
+        }
+        
+        html += `
+          <div class="room-card">
+            <div class="room-header">🚪 Izba ${room}</div>
+            <div class="room-beds">${bedsHtml}</div>
+          </div>
+        `;
+      }
+      document.getElementById('calendarView').innerHTML = html;
+      updateStats();
+    }
+
+    function renderReservations() {
+      let html = '';
+      reservations.forEach(r => {
+        const totalPrice = r.type === 'short' 
+          ? r.price * Math.ceil((new Date(r.checkOut) - new Date(r.checkIn)) / (1000 * 60 * 60 * 24))
+          : r.price;
+        
+        html += `
+          <tr>
+            <td><strong>${r.name}</strong></td>
+            <td>${r.company || '-'}</td>
+            <td>Izba ${r.room} / Postel ${r.bed}</td>
+            <td>${r.checkIn}</td>
+            <td>${r.checkOut}</td>
+            <td><span class="badge ${r.type === 'short' ? 'badge-warning' : 'badge-success'}">${r.type === 'short' ? 'Krátko' : 'Dlho'}</span></td>
+            <td>${r.price}€</td>
+            <td><strong>${totalPrice}€</strong></td>
+            <td><button class="btn btn-danger" onclick="deleteReservation('${r.id}')">Zmazať</button></td>
+          </tr>
+        `;
+      });
+      document.getElementById('reservationsTable').innerHTML = html;
+      updateStats();
+    }
+
+    function renderCompanies() {
+      let html = '';
+      companies.forEach(c => {
+        html += `
+          <tr>
+            <td><strong>${c.name}</strong></td>
+            <td>${c.email}</td>
+            <td>${c.phone}</td>
+            <td>${c.ico}</td>
+            <td>${c.beds}</td>
+            <td><button class="btn btn-danger" onclick="deleteCompany('${c.id}')">Zmazať</button></td>
+          </tr>
+        `;
+      });
+      document.getElementById('companiesTable').innerHTML = html;
+    }
+
+    function createReservation() {
+      const name = document.getElementById('resName').value;
+      const email = document.getElementById('resEmail').value;
+      const room = document.getElementById('resRoom').value;
+      const bed = document.getElementById('resBed').value;
+      const checkIn = document.getElementById('resCheckIn').value;
+      const checkOut = document.getElementById('resCheckOut').value;
+      const type = document.getElementById('resType').value;
+      const price = parseFloat(document.getElementById('resPrice').value);
+      const company = document.getElementById('resCompany').value || null;
+
+      if (!name || !room || !bed || !checkIn || !checkOut || !type || !price) {
+        showMessage('Vyplň všetky povinné polia!', 'error');
+        return;
+      }
+
+      const res = {
+        id: 'RES' + Date.now(),
+        name, email, room: parseInt(room), bed: parseInt(bed), checkIn, checkOut, type, price, company
+      };
+
+      reservations.push(res);
+      beds[res.room][res.bed] = res;
+
+      // Clear form
+      document.getElementById('resName').value = '';
+      document.getElementById('resEmail').value = '';
+      document.getElementById('resRoom').value = '';
+      document.getElementById('resBed').value = '';
+      document.getElementById('resCheckIn').value = '';
+      document.getElementById('resCheckOut').value = '';
+      document.getElementById('resType').value = '';
+      document.getElementById('resPrice').value = '';
+      document.getElementById('resCompany').value = '';
+      
+      toggleNewReservationForm();
+      renderCalendar();
+      renderReservations();
+      showMessage(`✓ Rezervácia vytvorená: ${name} v izbe ${room}, posteli ${bed}`, 'success');
+    }
+
+    function createCompany() {
+      const name = document.getElementById('companyName').value;
+      const email = document.getElementById('companyEmail').value;
+      const phone = document.getElementById('companyPhone').value;
+      const ico = document.getElementById('companyIco').value;
+      const beds = parseInt(document.getElementById('companyBedCount').value) || 0;
+
+      if (!name) {
+        showMessage('Vyplň názov firmy!', 'error');
+        return;
+      }
+
+      const company = {
+        id: 'COMP' + Date.now(),
+        name, email, phone, ico, beds
+      };
+
+      companies.push(company);
+
+      // Update select in reservations
+      const select = document.getElementById('resCompany');
+      const option = document.createElement('option');
+      option.value = name;
+      option.textContent = name;
+      select.appendChild(option);
+
+      // Clear form
+      document.getElementById('companyName').value = '';
+      document.getElementById('companyEmail').value = '';
+      document.getElementById('companyPhone').value = '';
+      document.getElementById('companyIco').value = '';
+      document.getElementById('companyBedCount').value = '';
+
+      toggleNewCompanyForm();
+      renderCompanies();
+      showMessage(`✓ Firma ${name} pridaná!`, 'success');
+    }
+
+    function deleteReservation(id) {
+      const res = reservations.find(r => r.id === id);
+      if (res) {
+        beds[res.room][res.bed] = null;
+        reservations = reservations.filter(r => r.id !== id);
+        renderCalendar();
+        renderReservations();
+        showMessage('✓ Rezervácia zmazaná', 'success');
+      }
+    }
+
+    function deleteCompany(id) {
+      companies = companies.filter(c => c.id !== id);
+      renderCompanies();
+      showMessage('✓ Firma zmazaná', 'success');
+    }
+
+    function toggleNewReservationForm() {
+      const form = document.getElementById('newReservationForm');
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function toggleNewCompanyForm() {
+      const form = document.getElementById('newCompanyForm');
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function updatePriceCalculation() {
+      const checkIn = document.getElementById('resCheckIn').value;
+      const checkOut = document.getElementById('resCheckOut').value;
+      const type = document.getElementById('resType').value;
+      const price = parseFloat(document.getElementById('resPrice').value) || 0;
+
+      if (!checkIn || !checkOut || !type || !price) return;
+
+      const days = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+      const total = type === 'short' ? price * days : price;
+
+      document.getElementById('priceCalc').style.display = 'block';
+      document.getElementById('priceDetail').innerHTML = 
+        type === 'short' 
+          ? `${price}€/noc × ${days} nocí = ${total}€`
+          : `${price}€/mesiac`;
+      document.getElementById('totalPrice').textContent = total;
+    }
+
+    function updatePricing() {
+      prices.short = parseFloat(document.getElementById('priceShort').value);
+      prices.long = parseFloat(document.getElementById('priceLong').value);
+      showMessage('✓ Ceny aktualizované', 'success');
+    }
+
+    function updateStats() {
+      let empty = 0, occupied = 0, company = 0;
+      for (let room = 1; room <= 8; room++) {
+        for (let bed = 1; bed <= 3; bed++) {
+          if (beds[room][bed]) {
+            if (beds[room][bed].company) company++;
+            else occupied++;
+          } else {
+            empty++;
+          }
+        }
+      }
+      document.getElementById('emptyBeds').textContent = empty;
+      document.getElementById('occupiedBeds').textContent = occupied;
+      document.getElementById('companyBeds').textContent = company;
+      document.getElementById('totalReservations').textContent = reservations.length;
+    }
+
+    function showMessage(text, type) {
+      const msg = document.getElementById('message');
+      msg.innerHTML = `<div class="message ${type}">${text}</div>`;
+      setTimeout(() => msg.innerHTML = '', 3000);
+    }
+
+    document.getElementById('calcDays').addEventListener('change', function() {
+      const days = parseInt(this.value);
+      document.getElementById('calcShortPrice').textContent = (prices.short * days);
+      document.getElementById('calcLongPrice').textContent = prices.long;
+    });
+
+    // INIT
+    initBeds();
+    renderCalendar();
+  </script>
+</body>
+</html>
