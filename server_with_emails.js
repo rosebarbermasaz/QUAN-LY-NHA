@@ -11,16 +11,18 @@ app.use(cors());
 const PORT = process.env.PORT || 3001;
 const OWNER_EMAIL = process.env.OWNER_EMAIL || 'owner@ubytovna.sk';
 
-// Email konfigurácia (Gmail)
+// Email konfigurácia - MAILTRAP verzia (bez Gmail problémov!)
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: process.env.EMAIL_HOST || 'smtp.mailtrap.io',
+  port: process.env.EMAIL_PORT || 465,
+  secure: true,
   auth: {
-    user: process.env.EMAIL_USER,      // napr: ubytovna@gmail.com
-    pass: process.env.EMAIL_PASSWORD    // App password z Gmail
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD
   }
 });
 
-// In-memory databáza (v budúcnosti nahradiť MongoDB)
+// In-memory databáza
 let reservations = [
   {
     id: 'RES001',
@@ -53,7 +55,7 @@ const emailTemplates = {
       <p><strong>Odchod:</strong> ${checkOut}</p>
       <p><strong>Cena:</strong> ${totalPrice}€</p>
       <p style="color: #ff9800;"><strong>⚠️ Čakajúca na potvrdenie!</strong></p>
-      <p>Potvrď rezerváciu v admin paneli: <a href="https://ubytovna-app.vercel.app/admin">Admin Panel</a></p>
+      <p>Potvrď rezerváciu v admin paneli.</p>
     `
   }),
 
@@ -79,29 +81,6 @@ const emailTemplates = {
       <p><strong>Zostávajúce do úhrady:</strong> ${remaining}€</p>
       <p style="color: green;"><strong>✓ Aktualizované!</strong></p>
     `
-  }),
-
-  checkInReminder: (name, room, checkIn, checkOut) => ({
-    subject: `📅 Príchod zajtra - Ubytovňa Trnava`,
-    html: `
-      <h2>Hostia prídu zajtra!</h2>
-      <p><strong>Hosť:</strong> ${name}</p>
-      <p><strong>Izba:</strong> ${room}</p>
-      <p><strong>Príchod:</strong> ${checkIn}</p>
-      <p><strong>Odchod:</strong> ${checkOut}</p>
-      <p>Priprav izbu na príchod!</p>
-    `
-  }),
-
-  paymentReminder: (name, amount, room) => ({
-    subject: `⚠️ Čakajúca platba - Ubytovňa Trnava`,
-    html: `
-      <h2>Chýbajúca platba!</h2>
-      <p><strong>Hosť:</strong> ${name}</p>
-      <p><strong>Izba:</strong> ${room}</p>
-      <p><strong>Dlhuje:</strong> ${amount}€</p>
-      <p>Prosím, zaplatite čím skôr.</p>
-    `
   })
 };
 
@@ -109,7 +88,7 @@ const emailTemplates = {
 async function sendEmail(to, subject, html) {
   try {
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: `"Ubytovňa Trnava" <${process.env.EMAIL_USER}>`,
       to,
       subject,
       html
@@ -117,7 +96,7 @@ async function sendEmail(to, subject, html) {
     console.log(`✓ Email poslal: ${to}`);
     return { success: true };
   } catch (error) {
-    console.error(`✗ Email chyba:`, error);
+    console.error(`✗ Email chyba:`, error.message);
     return { success: false, error: error.message };
   }
 }
@@ -225,8 +204,13 @@ app.put('/api/reservations/:id/payment', async (req, res) => {
 });
 
 // Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', email: process.env.EMAIL_USER ? '✓ Nakonfigurovaný' : '✗ Chýba konfigurácia' });
+app.get('/health', async (req, res) => {
+  try {
+    await transporter.verify();
+    res.json({ status: 'OK', email: '✓ Email nakonfigurovaný a testovaný' });
+  } catch (error) {
+    res.json({ status: 'ERROR', email: '✗ Email problém: ' + error.message });
+  }
 });
 
 // Error handling
